@@ -1,0 +1,12 @@
+﻿spring:
+  data:
+    redis:
+      ssl:
+        enabled: true
+  jpa:
+    show-sql: false
+
+logging:
+  level:
+    com.proyecto.gestioncitas: INFO
+    root: WARN
