@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -38,8 +39,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider proveedor;
 
-    public JwtAuthenticationFilter(JwtTokenProvider proveedor) {
+    /**
+     * Lista negra de tokens revocados. Se inyecta con ObjectProvider porque
+     * la implementacion vive en el modulo auth: config declara el puerto y no
+     * debe depender de que exista un bean suyo para poder arrancar.
+     */
+    private final ObjectProvider<TokenRevocationStore> revocados;
+
+    public JwtAuthenticationFilter(JwtTokenProvider proveedor,
+            ObjectProvider<TokenRevocationStore> revocados) {
         this.proveedor = proveedor;
+        this.revocados = revocados;
     }
 
     @Override
@@ -54,7 +64,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             // Un refresh token no sirve para autenticar peticiones normales:
             // solo vale en /api/auth/refresh, que es una ruta publica.
-            if (claims != null && proveedor.esAccessToken(claims)) {
+            if (claims != null && proveedor.esAccessToken(claims) && !fueRevocado(claims)) {
                 autenticar(request, claims);
             }
         }
@@ -81,6 +91,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // El sub no es un numero: token manipulado. Se ignora y responde el entry point.
             log.debug("El claim sub no es un id valido");
         }
+    }
+
+    /**
+     * true si el token fue revocado por un cierre de sesion. Si no hay
+     * implementacion de la lista negra, nada esta revocado.
+     */
+    private boolean fueRevocado(Claims claims) {
+        String jti = claims.getId();
+        if (jti == null) {
+            return false;
+        }
+        TokenRevocationStore lista = revocados.getIfAvailable();
+        if (lista == null) {
+            return false;
+        }
+        if (lista.estaRevocado(jti)) {
+            log.debug("Token {} rechazado: fue revocado", jti);
+            return true;
+        }
+        return false;
     }
 
     private String extraerToken(HttpServletRequest request) {

@@ -41,7 +41,12 @@ public class SecurityConfig {
             "/v3/api-docs/**",
             "/actuator/health",
             "/actuator/health/**",
-            "/actuator/info"
+            "/actuator/info",
+
+            // Sin esta ruta, cualquier excepcion no manejada se reenvia a
+            // /error, que al exigir autenticacion responde 401 y oculta el
+            // error real. Eso convierte un 500 en un 401 enganoso.
+            "/error"
     };
 
     private final JwtAuthenticationFilter jwtFilter;

@@ -41,6 +41,12 @@ spring:
   jpa:
     show-sql: false
 
+app:
+  seguridad:
+    # En prod la lista negra de tokens revocados va en Redis, para que
+    # sobreviva al reinicio del servicio y se comparta entre instancias.
+    lista-negra-redis: true
+
 logging:
   level:
     root: INFO

@@ -44,6 +44,9 @@ public class JwtTokenProvider {
     public String generarAccessToken(Long usuarioId, String rol) {
         Instant ahora = Instant.now();
         return Jwts.builder()
+                // El access token tambien lleva jti: es lo que permite
+                // revocarlo al cerrar sesion, poniendolo en la lista negra.
+                .id(UUID.randomUUID().toString())
                 .subject(String.valueOf(usuarioId))
                 .claim(AppConstants.CLAIM_ROL, rol)
                 .claim(AppConstants.CLAIM_TIPO, AppConstants.TIPO_ACCESS)
