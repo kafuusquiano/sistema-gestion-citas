@@ -29,3 +29,11 @@ dist/
 !.env.example
 .idea/
 .vscode/
+
+# Salida de compilacion Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# Frontend
+.vite/
+coverage/

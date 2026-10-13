@@ -1,0 +1,47 @@
+# Perfil de produccion. Todo llega por variable de entorno (instruccion G5).
+# PostgreSQL en Neon, MongoDB en Atlas M0, Redis en Upstash, backend en Render.
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      # Render free tiene 512 MB de RAM: pool chico a proposito
+      maximum-pool-size: 5
+      minimum-idle: 1
+      connection-timeout: 30000
+
+  data:
+    mongodb:
+      uri: ${MONGO_URI}
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD}
+      ssl:
+        # Upstash exige TLS
+        enabled: ${REDIS_SSL:true}
+      timeout: 5000
+
+  cache:
+    type: redis
+
+  mail:
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+  jpa:
+    show-sql: false
+
+logging:
+  level:
+    root: INFO
+    com.proyecto.gestioncitas: INFO
