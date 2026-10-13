@@ -59,10 +59,24 @@
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <!--
+          Hace falta el STARTER, no solo flyway-core.
+          En Spring Boot 4 FlywayAutoConfiguration salio de
+          spring-boot-autoconfigure y vive en el artefacto spring-boot-flyway,
+          que es lo que arrastra este starter. Con flyway-core a secas, como se
+          declaraba en Spring Boot 3, la libreria esta en el classpath pero
+          nadie la ejecuta: las migraciones no corren y no se emite ningun
+          error ni advertencia.
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-flyway</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
         </dependency>
+        <!-- Desde Flyway 10 el soporte de cada motor va en su propio modulo. -->
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-database-postgresql</artifactId>

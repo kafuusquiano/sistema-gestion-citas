@@ -54,6 +54,9 @@ public class CacheConfig {
                 Caffeine.newBuilder()
                         .expireAfterWrite(ttl)
                         .maximumSize(1_000)
+                        // Sin recordStats() Micrometer avisa que no puede medir
+                        // la cache y solo expone cache.size.
+                        .recordStats()
                         .build()));
 
         return gestor;
