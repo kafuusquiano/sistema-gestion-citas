@@ -8,7 +8,7 @@ import org.springframework.cache.CacheManager;
 import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
@@ -21,10 +21,14 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
  * spring.cache.redis.time-to-live, porque ambas propiedades aplican un unico
  * TTL a todas las caches. De ahi que haga falta declarar los CacheManager.
  *
- * Los dos perfiles respetan los mismos nombres y los mismos tiempos, asi que
- * el codigo de negocio usa @Cacheable y @CacheEvict sin saber cual esta activo:
- *   - dev usa Caffeine en memoria, porque no hay Redis nativo para Windows.
- *   - prod usa Redis en Upstash.
+ * Las dos implementaciones respetan los mismos nombres y los mismos tiempos,
+ * asi que el codigo de negocio usa @Cacheable y @CacheEvict sin saber cual
+ * esta activa.
+ *
+ * La eleccion la hace la propiedad app.cache.redis y NO el perfil activo. Con
+ * @Profile, produccion quedaria atada a tener Redis: si no esta configurado,
+ * cada @Cacheable fallaria al intentar conectar. Con la propiedad, el servicio
+ * arranca con Caffeine y se pasa a Redis poniendo REDIS_ENABLED=true.
  */
 @Configuration
 public class CacheConfig {
@@ -44,7 +48,7 @@ public class CacheConfig {
             AppConstants.CACHE_ESPECIALIDADES, TTL_ESPECIALIDADES);
 
     @Bean
-    @Profile("dev")
+    @ConditionalOnProperty(name = "app.cache.redis", havingValue = "false", matchIfMissing = true)
     public CacheManager caffeineCacheManager() {
         CaffeineCacheManager gestor = new CaffeineCacheManager();
         // Sin esto, una cache con nombre no registrado se crearia sin TTL.
@@ -63,7 +67,7 @@ public class CacheConfig {
     }
 
     @Bean
-    @Profile("prod")
+    @ConditionalOnProperty(name = "app.cache.redis", havingValue = "true")
     public CacheManager redisCacheManager(
             org.springframework.data.redis.connection.RedisConnectionFactory conexion) {
 

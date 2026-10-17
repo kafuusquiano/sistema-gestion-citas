@@ -52,6 +52,16 @@ public class PacienteFacadeImpl implements PacienteFacade {
     }
 
     @Override
+    public Long obtenerUsuarioIdPorPaciente(Long pacienteId) {
+        if (pacienteId == null) {
+            return null;
+        }
+        return repositorio.findById(pacienteId)
+                .map(Paciente::getUsuarioId)
+                .orElse(null);
+    }
+
+    @Override
     public Long obtenerIdPorUsuario(Long usuarioId) {
         if (usuarioId == null) {
             return null;

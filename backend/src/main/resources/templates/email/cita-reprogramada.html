@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Cita reprogramada</title>
+</head>
+<body style="margin:0; padding:0; background-color:#f4f6f8;
+             font-family:Arial, Helvetica, sans-serif; color:#333333;">
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+       style="background-color:#f4f6f8; padding:24px 0;">
+    <tr>
+        <td align="center">
+            <table role="presentation" width="600" cellpadding="0" cellspacing="0"
+                   style="background-color:#ffffff; border-radius:6px; overflow:hidden;">
+
+                <tr>
+                    <td style="background-color:#bf4e00; padding:20px 28px;">
+                        <h1 style="margin:0; font-size:20px; color:#ffffff; font-weight:bold;">
+                            Su cita cambio de fecha
+                        </h1>
+                        <p style="margin:4px 0 0; font-size:13px; color:#ffffff;"
+                           th:text="${establecimiento}">Centro de Salud Acapulco</p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="padding:28px;">
+                        <p style="margin:0 0 20px; font-size:15px;">
+                            Estimado(a) <strong th:text="${nombre}">paciente</strong>:
+                        </p>
+
+                        <p style="margin:0 0 20px; font-size:15px; line-height:1.6;">
+                            Su cita fue reprogramada. Estos son los datos nuevos.
+                        </p>
+
+                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+                               style="border:1px solid #ef6c00; background-color:#fff8e1;
+                                      padding:16px 20px; margin-bottom:20px;">
+                            <tr>
+                                <td style="font-size:15px; line-height:1.8;">
+                                    <strong>Nueva fecha:</strong>
+                                    <span th:text="${fecha}">lunes 19 de octubre de 2026</span><br>
+                                    <strong>Nueva hora:</strong>
+                                    <span th:text="${hora}">10:20</span>
+                                    <span th:if="${detalle != null and !detalle.isEmpty()}">
+                                        <br><strong>Detalle:</strong>
+                                        <span th:text="${detalle}">Cambio solicitado</span>
+                                    </span>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <p style="margin:0 0 16px; font-size:15px; line-height:1.6;">
+                            La cita conserva el mismo numero de registro, solo cambio el horario.
+                        </p>
+
+                        <p style="margin:0; font-size:15px; line-height:1.6;">
+                            Le pedimos confirmar su asistencia desde el sistema.
+                        </p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="background-color:#eceff1; padding:16px 28px;">
+                        <p style="margin:0; font-size:12px; color:#455a64; line-height:1.5;">
+                            Este es un mensaje automatico, por favor no responda a este correo.<br>
+                            Centro de Salud Acapulco &mdash; Microrred Acapulco &mdash; DIRESA Callao
+                        </p>
+                    </td>
+                </tr>
+
+            </table>
+        </td>
+    </tr>
+</table>
+
+</body>
+</html>

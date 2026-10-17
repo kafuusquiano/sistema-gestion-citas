@@ -1,31 +1,33 @@
 package com.proyecto.gestioncitas.config.redis;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 /**
- * Acceso directo a Redis, solo en produccion.
- *
- * Lo usa TokenBlacklistService del modulo auth para guardar los jti revocados
- * al cerrar sesion, con un TTL igual a lo que le quedaba de vigencia al token.
+ * Acceso directo a Redis. Lo usa TokenBlacklistService del modulo auth para
+ * guardar los identificadores de los tokens revocados al cerrar sesion, con un
+ * tiempo de vida igual a lo que al token le quedaba de vigencia.
  *
  * Es StringRedisTemplate y no RedisTemplate<String, Object>: los valores que
  * se guardan son marcas y jti, texto plano. Evita arrastrar un serializador
  * JSON a Redis y el acoplamiento con Jackson que eso implica.
  *
- * OJO: el @Profile("prod") de esta clase NO hace que el bean falte en dev.
- * Spring Boot autoconfigura StringRedisTemplate en todos los perfiles por el
- * solo hecho de tener spring-boot-starter-data-redis en el classpath; lo que
- * hace esta clase es sustituir esa definicion en prod. Por eso nadie debe
- * decidir "uso Redis si el bean existe": en dev existe igual y al usarlo
- * fallaria al conectar. Quien lo necesite se guia por la propiedad
- * app.seguridad.lista-negra-redis.
+ * La condicion es la propiedad app.cache.redis y NO el perfil activo. Con
+ * @Profile("prod") este bean se creaba siempre en produccion, y al pedir el
+ * RedisConnectionFactory obligaba a instanciarlo aunque Redis no estuviera
+ * configurado: el arranque fallaba con "'host' must not be empty" antes de
+ * llegar a usar nada. Atandolo a la propiedad, sin Redis el bean no existe y
+ * la fabrica de conexiones no llega a crearse.
+ *
+ * Ademas, conviene recordar que StringRedisTemplate lo autoconfigura Spring
+ * Boot en cualquier perfil por el solo hecho de tener el starter en el
+ * classpath. Nadie debe decidir "uso Redis si el bean existe".
  */
 @Configuration
-@Profile("prod")
+@ConditionalOnProperty(name = "app.cache.redis", havingValue = "true")
 public class RedisConfig {
 
     @Bean

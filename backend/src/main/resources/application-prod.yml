@@ -1,34 +1,37 @@
 # Perfil de produccion. Todo llega por variable de entorno (instruccion G5).
-# PostgreSQL en Neon, Redis en Upstash, backend en Render.
+# PostgreSQL en Neon, backend en Render.
+#
+# Redis y el correo son OPCIONALES: el servicio arranca solo con las tres
+# variables de la base de datos. Se activan poniendo REDIS_ENABLED=true o
+# MAIL_ENABLED=true y sus credenciales. Sin valores por defecto, un marcador
+# sin resolver impediria el arranque, y eso convertiria dos servicios
+# accesorios en requisitos para desplegar.
 spring:
   datasource:
     url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     hikari:
-      # Render free tiene 512 MB de RAM: pool chico a proposito
+      # Render free tiene 512 MB de RAM: pool chico a proposito.
       maximum-pool-size: 5
       minimum-idle: 1
       connection-timeout: 30000
 
   data:
     redis:
-      host: ${REDIS_HOST}
+      host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD}
+      password: ${REDIS_PASSWORD:}
       ssl:
-        # Upstash exige TLS
+        # Upstash exige TLS.
         enabled: ${REDIS_SSL:true}
       timeout: 5000
 
-  cache:
-    type: redis
-
   mail:
-    host: ${MAIL_HOST}
+    host: ${MAIL_HOST:localhost}
     port: ${MAIL_PORT:587}
-    username: ${MAIL_USERNAME}
-    password: ${MAIL_PASSWORD}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
     properties:
       mail:
         smtp:
@@ -39,11 +42,29 @@ spring:
   jpa:
     show-sql: false
 
+management:
+  endpoint:
+    health:
+      # Render consulta este punto para decidir si el despliegue esta sano.
+      show-details: never
+  health:
+    # Sin Redis ni correo configurados, sus indicadores dejarian el estado en
+    # DOWN y Render daria el despliegue por fallido.
+    redis:
+      enabled: ${REDIS_ENABLED:false}
+    mail:
+      enabled: ${MAIL_ENABLED:false}
+
 app:
+  cache:
+    # false usa Caffeine en memoria; true usa Redis. CacheConfig lee esta
+    # propiedad en lugar de decidir por perfil, para que produccion pueda
+    # funcionar con o sin Redis.
+    redis: ${REDIS_ENABLED:false}
   seguridad:
-    # En prod la lista negra de tokens revocados va en Redis, para que
-    # sobreviva al reinicio del servicio y se comparta entre instancias.
-    lista-negra-redis: true
+    # La lista negra de tokens revocados sigue la misma propiedad: en Redis
+    # sobrevive al reinicio y se comparte entre instancias.
+    lista-negra-redis: ${REDIS_ENABLED:false}
 
 logging:
   level:

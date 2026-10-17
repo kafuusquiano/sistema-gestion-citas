@@ -1,0 +1,12 @@
+# Lo que no debe entrar en la imagen.
+target/
+.mvn/
+mvnw
+mvnw.cmd
+*.iml
+.idea/
+.vscode/
+# Nunca copiar credenciales al contenedor: en produccion llegan por
+# variables de entorno del panel de Render (instruccion G5).
+.env
+*.log

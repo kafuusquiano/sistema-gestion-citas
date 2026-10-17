@@ -1,0 +1,60 @@
+name: Deploy backend
+
+# Solo al integrar en main, y nunca si las pruebas fallan.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Desplegar en Render
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: gestion_citas_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Preparar Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: temurin
+          cache: maven
+
+      - name: Probar antes de desplegar
+        working-directory: backend
+        env:
+          SPRING_PROFILES_ACTIVE: dev
+          DB_URL: jdbc:postgresql://localhost:5432/gestion_citas_test
+          DB_USERNAME: postgres
+          DB_PASSWORD: postgres
+          JWT_SECRET: clave-de-integracion-continua-con-mas-de-sesenta-y-cuatro-caracteres-xx
+        run: mvn -B -ntp verify
+
+      - name: Invocar el Deploy Hook de Render
+        # La URL es un secreto del repositorio: quien la tenga puede
+        # disparar un despliegue. Nunca va en el codigo.
+        env:
+          HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$HOOK" ]; then
+            echo "Falta el secreto RENDER_DEPLOY_HOOK. Configuralo en Settings > Secrets."
+            exit 1
+          fi
+          curl -fsS -X POST "$HOOK"
+          echo "Despliegue solicitado a Render."
