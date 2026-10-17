@@ -1,15 +1,11 @@
 # Perfil de desarrollo local.
-# PostgreSQL y MongoDB instalados nativos en Windows. Sin Docker, sin Kafka.
+# PostgreSQL instalado nativo en Windows. Sin Docker, sin Kafka, sin MongoDB.
 # La cache usa Caffeine en memoria: no hay Redis nativo para Windows.
 spring:
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/gestion_citas}
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:postgres}
-
-  data:
-    mongodb:
-      uri: ${MONGO_URI:mongodb://localhost:27017/gestion_citas}
 
   cache:
     type: caffeine

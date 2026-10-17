@@ -1,5 +1,5 @@
 # Perfil de produccion. Todo llega por variable de entorno (instruccion G5).
-# PostgreSQL en Neon, MongoDB en Atlas M0, Redis en Upstash, backend en Render.
+# PostgreSQL en Neon, Redis en Upstash, backend en Render.
 spring:
   datasource:
     url: ${DB_URL}
@@ -12,8 +12,6 @@ spring:
       connection-timeout: 30000
 
   data:
-    mongodb:
-      uri: ${MONGO_URI}
     redis:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT:6379}
